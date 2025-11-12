@@ -186,10 +186,12 @@ public class EnemyEncounterZone : MonoBehaviour
             return;
         }
 
-        if(aliveEnemies >- maxAliveEnemies)
+        //==================================================
+        if(aliveEnemies >= maxAliveEnemies)
         {
             return;
         }
+        //==================================================
 
         float now = Time.time;
 
