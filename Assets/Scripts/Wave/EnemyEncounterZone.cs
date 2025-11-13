@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro.Examples;
 using UnityEditor.U2D;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// 플레이어가 이벤트 트리거에 진입했을 시 데이터에 세팅된 스폰 포인트에 세팅된 수만큼의 적을 스폰하는 클래스.
@@ -11,7 +12,7 @@ public class EnemyEncounterZone : MonoBehaviour
 {
     public string encounterName = "Encounter A";
     public bool startOnPlayerEnter = true;
-    public string playerTag = "player";
+    public string playerTag = "Player";
 
     public WaveDefinition[] waves;
 
@@ -21,6 +22,14 @@ public class EnemyEncounterZone : MonoBehaviour
     // 당장 필수는 아님.
     public GameObject[] lockOnStart;
     public GameObject[] unlockOnEnd;
+
+    //========================================================
+    public UnityEvent onEncounterStarted;                       // 인카운터 시작
+    public UnityEvent onEncounterCompleted;                     // 인카운터 완료
+    public UnityEvent<int> onWaveStarted;                       // 웨이브 시작(wave index: 0,1,…)
+    public UnityEvent<int> onEnemyAliveChanged;                 // 살아있는 적 수 변경
+    public UnityEvent<int> onEnemyTotalChanged;                 // 이번 웨이브 총 소환 수 변경
+    //========================================================
 
     private bool activated; // 이미 한 번 활성화 되었는지 여부.
     private int currentWaveIndex;
@@ -104,6 +113,28 @@ public class EnemyEncounterZone : MonoBehaviour
 
         SetObjectsActive(lockOnStart, true);
         SetObjectsActive(unlockOnEnd, false);
+
+        //================================================================
+        if (onEncounterStarted != null)
+        {
+            onEncounterStarted.Invoke();
+        }
+
+        if (onWaveStarted != null)
+        {
+            onWaveStarted.Invoke(currentWaveIndex);
+        }
+
+        if (onEnemyAliveChanged != null)
+        {
+            onEnemyAliveChanged.Invoke(aliveEnemies);
+        }
+
+        if (onEnemyTotalChanged != null)
+        {
+            onEnemyTotalChanged.Invoke(totalToSpawnThisWave);
+        }
+        //================================================================
     }
 
     // 현재 웨이브의 WaveDefinition을 기반으로 런타임 상태를 준비한다.
@@ -226,6 +257,17 @@ public class EnemyEncounterZone : MonoBehaviour
 
                 ++aliveEnemies;
                 ++totalSpawnedThisWave;
+
+                //==================================================
+                if (onEnemyAliveChanged != null)
+                {
+                    onEnemyAliveChanged.Invoke(aliveEnemies);
+                }
+                if (onEnemyTotalChanged != null)
+                {
+                    onEnemyTotalChanged.Invoke(totalToSpawnThisWave);
+                }
+                //==================================================
             }
         }
     }
@@ -246,6 +288,23 @@ public class EnemyEncounterZone : MonoBehaviour
             }
         }
 
+        //======================================================
+        if (waveCooldownTimer <= 0.0f)
+        {
+            waveCooldownTimer = wave.delayAfterWave;
+            return;
+        }
+
+        if (waveCooldownTimer > 0.0f)
+        {
+            waveCooldownTimer -= Time.deltaTime;
+            if (waveCooldownTimer > 0.0f)
+            {
+                return;
+            }
+        }
+        //======================================================
+
         ++currentWaveIndex;
 
         if (currentWaveIndex >= waves.Length)
@@ -255,6 +314,23 @@ public class EnemyEncounterZone : MonoBehaviour
         else
         {
             SetupWaveRuntimeState();
+
+            //=======================================================
+            if (onWaveStarted != null)
+            {
+                onWaveStarted.Invoke(currentWaveIndex);
+            }
+
+            if (onEnemyAliveChanged != null)
+            {
+                onEnemyAliveChanged.Invoke(aliveEnemies);
+            }
+
+            if (onEnemyTotalChanged != null)
+            {
+                onEnemyTotalChanged.Invoke(totalToSpawnThisWave);
+            }
+            //=======================================================
         }
     }
 
@@ -263,6 +339,13 @@ public class EnemyEncounterZone : MonoBehaviour
         if(aliveEnemies > 0)
         {
             --aliveEnemies;
+
+            //=======================================================
+            if (onEnemyAliveChanged != null)
+            {
+                onEnemyAliveChanged.Invoke(aliveEnemies);
+            }
+            //=======================================================
         }
     }
 
@@ -275,6 +358,13 @@ public class EnemyEncounterZone : MonoBehaviour
 
         SetObjectsActive(lockOnStart, false);
         SetObjectsActive(unlockOnEnd, true);
+
+        //===========================================================
+        if (onEncounterCompleted != null)
+        {
+            onEncounterCompleted.Invoke();
+        }
+        //===========================================================
     }
 
     void SetObjectsActive(GameObject[] objs, bool active)
@@ -287,4 +377,24 @@ public class EnemyEncounterZone : MonoBehaviour
             }
         }
     }
+
+    //==============================================================
+    public int GetCurrentWaveIndex()
+    {
+        int idx = currentWaveIndex;
+        return idx;
+    }
+
+    public int GetAliveEnemies()
+    {
+        int v = aliveEnemies;
+        return v;
+    }
+
+    public int GetTotalEnemiesThisWave()
+    {
+        int v = totalToSpawnThisWave;
+        return v;
+    }
+    //==============================================================
 }
