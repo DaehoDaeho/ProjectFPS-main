@@ -80,7 +80,7 @@ public class EncounterHUDController : MonoBehaviour
         UpdateWaveLabel(waveIndex);
         UpdateEnemyCounter(zone.GetAliveEnemies(), zone.GetTotalEnemiesThisWave());
         PlayPulse(panelWaveTransform);
-        ShowToast($"Wave {waveIndex + 1} Ω√¿€");
+        ShowToast($"Wave {waveIndex + 1} Start");
     }
 
     /// <summary>
