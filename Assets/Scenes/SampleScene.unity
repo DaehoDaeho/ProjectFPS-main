@@ -4762,11 +4762,11 @@ MonoBehaviour:
   - waveName: wave 1
     enemies:
     - spawnPoint: {fileID: 722948672}
-      enemyPrefab: {fileID: 7734068375271689516, guid: c4ea3e257a10fb44eaff1bac7b44d428, type: 3}
+      enemyPrefab: {fileID: 1677405927551132822, guid: ce4cf2d51cf5b824e936e85abfd4a5c6, type: 3}
       count: 2
       spawnInterval: 0.5
     - spawnPoint: {fileID: 1618173386}
-      enemyPrefab: {fileID: 7734068375271689516, guid: c4ea3e257a10fb44eaff1bac7b44d428, type: 3}
+      enemyPrefab: {fileID: 2833418878827774296, guid: a24327cbe6a93304d98b54fd2e7e9d63, type: 3}
       count: 2
       spawnInterval: 0.5
     waitUntilAllDead: 1
@@ -4774,8 +4774,24 @@ MonoBehaviour:
   - waveName: wave 2
     enemies:
     - spawnPoint: {fileID: 1618173386}
-      enemyPrefab: {fileID: 7734068375271689516, guid: c4ea3e257a10fb44eaff1bac7b44d428, type: 3}
+      enemyPrefab: {fileID: 1677405927551132822, guid: ce4cf2d51cf5b824e936e85abfd4a5c6, type: 3}
       count: 1
+      spawnInterval: 0.5
+    - spawnPoint: {fileID: 595384509}
+      enemyPrefab: {fileID: 2833418878827774296, guid: a24327cbe6a93304d98b54fd2e7e9d63, type: 3}
+      count: 2
+      spawnInterval: 0.5
+    waitUntilAllDead: 1
+    delayAfterWave: 1
+  - waveName: wave 3
+    enemies:
+    - spawnPoint: {fileID: 722948672}
+      enemyPrefab: {fileID: 1677405927551132822, guid: ce4cf2d51cf5b824e936e85abfd4a5c6, type: 3}
+      count: 1
+      spawnInterval: 0.5
+    - spawnPoint: {fileID: 595384509}
+      enemyPrefab: {fileID: 2833418878827774296, guid: a24327cbe6a93304d98b54fd2e7e9d63, type: 3}
+      count: 2
       spawnInterval: 0.5
     - spawnPoint: {fileID: 595384509}
       enemyPrefab: {fileID: 7734068375271689516, guid: c4ea3e257a10fb44eaff1bac7b44d428, type: 3}
@@ -6120,6 +6136,9 @@ MonoBehaviour:
   maxHealth: 1000
   destroyOnDeath: 1
   onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  onChangedHP:
     m_PersistentCalls:
       m_Calls: []
   hitVfxPrefab: {fileID: 0}
