@@ -10,6 +10,7 @@ public class Health : MonoBehaviour, IDamageable
     public float maxHealth = 1000.0f;             // 최대 체력.
     public bool destroyOnDeath = true;           // 사망 시 오브젝트 파괴할지 여부.
     public UnityEvent onDeath;                   // 사망 이벤트(파티클/드랍 등)
+    public UnityEvent onChangedHP;
 
     [Header("Optional Feedback")]
     public ParticleSystem hitVfxPrefab;          // 피격시 피/먼지 등.
@@ -62,6 +63,16 @@ public class Health : MonoBehaviour, IDamageable
             if (destroyOnDeath == true)
             {
                 Destroy(gameObject);
+            }
+        }
+        else
+        {
+            if(currentHealth <= maxHealth * 0.5f)
+            {
+                if (onChangedHP != null)
+                {
+                    onChangedHP.Invoke();
+                }
             }
         }
     }

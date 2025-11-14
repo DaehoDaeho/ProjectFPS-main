@@ -23,14 +23,12 @@ public class EnemyEncounterZone : MonoBehaviour
     public GameObject[] lockOnStart;
     public GameObject[] unlockOnEnd;
 
-    //========================================================
     public UnityEvent onEncounterStarted;                       // 인카운터 시작
     public UnityEvent onEncounterCompleted;                     // 인카운터 완료
     public UnityEvent<int> onWaveStarted;                       // 웨이브 시작(wave index: 0,1,…)
     public UnityEvent<int> onEnemyAliveChanged;                 // 살아있는 적 수 변경
     public UnityEvent<int> onEnemyTotalChanged;                 // 이번 웨이브 총 소환 수 변경
-    //========================================================
-
+    
     private bool activated; // 이미 한 번 활성화 되었는지 여부.
     private int currentWaveIndex;
     private float waveCooldownTimer;
@@ -39,7 +37,7 @@ public class EnemyEncounterZone : MonoBehaviour
     private int totalSpawnedThisWave;
     private int totalToSpawnThisWave;
 
-    private class RuntimeWaveEntryState
+    public class RuntimeWaveEntryState
     {
         public WaveEnemyEntry config;
         public int spawnedCount;
@@ -245,8 +243,9 @@ public class EnemyEncounterZone : MonoBehaviour
                 continue;
             }
 
-            GameObject spawned = st.config.spawnPoint.SpawnOne(this);
-            if(spawned != null)
+            //GameObject spawned = st.config.spawnPoint.SpawnOne(this);
+            GameObject spawned = st.config.spawnPoint.SpawnOne(this, st.config.enemyPrefab);
+            if (spawned != null)
             {
                 ++st.spawnedCount;
                 st.nextSpawnTime = now + st.config.spawnInterval;

@@ -55,17 +55,24 @@ public class ChaseState : EnemyState
         // 3) 사거리 판정 -> Attack
         float distToPlayer = brain.DistanceToPlayer();
 
-        if (distToPlayer <= brain.attackRangedRange)
+        if(brain.enemyType == EnemyType.Hybrid || brain.enemyType == EnemyType.Ranged)
         {
-            brain.RequestStateChange(new AttackRangedState(brain));
-            return;
+            if (distToPlayer <= brain.attackRangedRange)
+            {
+                brain.RequestStateChange(new AttackRangedState(brain));
+                return;
+            }
         }
 
-        if (distToPlayer <= brain.attackRange)
+
+        if (brain.enemyType == EnemyType.Hybrid || brain.enemyType == EnemyType.Melee)
         {
-            brain.RequestStateChange(new AttackState(brain));
-            return;
-        }
+            if (distToPlayer <= brain.attackRange)
+            {
+                brain.RequestStateChange(new AttackState(brain));
+                return;
+            }
+        }   
 
         // 4) 시야 상실 + 목적지 도착 -> Search
         if (seen == false)

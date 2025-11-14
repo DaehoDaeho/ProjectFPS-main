@@ -8,9 +8,9 @@ public class EnemySpawnPoint : MonoBehaviour
 
     private int spawnedCount;
 
-    public GameObject SpawnOne(EnemyEncounterZone owner)
+    public GameObject SpawnOne(EnemyEncounterZone owner, GameObject prefab)
     {
-        if(enemyPrefab == null)
+        if(enemyPrefab == null && prefab == null)
         {
             return null;
         }
@@ -29,7 +29,11 @@ public class EnemySpawnPoint : MonoBehaviour
 
         Quaternion rot = transform.rotation;
 
-        GameObject obj = Instantiate(enemyPrefab, spawnPos, rot);
+        GameObject obj = Instantiate(prefab, spawnPos, rot);
+        if(obj == null)
+        {
+            obj = Instantiate(enemyPrefab, spawnPos, rot);
+        }
         ++spawnedCount;
 
         EnemyLifetimeReporter reporter = obj.GetComponent<EnemyLifetimeReporter>();

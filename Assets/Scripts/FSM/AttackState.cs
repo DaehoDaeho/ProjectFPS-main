@@ -56,10 +56,13 @@ public class AttackState : EnemyState
         float dist = brain.DistanceToPlayer();        
         if (dist > brain.attackRange)
         {
-            if(dist <= brain.attackRangedRange)
+            if(brain.enemyType == EnemyType.Hybrid)
             {
-                brain.RequestStateChange(new AttackRangedState(brain));
-                return;
+                if (dist <= brain.attackRangedRange)
+                {
+                    brain.RequestStateChange(new AttackRangedState(brain));
+                    return;
+                }
             }
 
             brain.RequestStateChange(new ChaseState(brain));

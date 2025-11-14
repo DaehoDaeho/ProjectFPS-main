@@ -50,10 +50,13 @@ public class AttackRangedState : EnemyState
         // 2) 사거리 유지 체크: 이탈 시 Chase 복귀
         float dist = brain.DistanceToPlayer();
 
-        if (dist <= brain.attackRange)
+        if(brain.enemyType == EnemyType.Hybrid)
         {
-            brain.RequestStateChange(new AttackState(brain));
-            return;
+            if (dist <= brain.attackRange)
+            {
+                brain.RequestStateChange(new AttackState(brain));
+                return;
+            }
         }
 
         if (dist > brain.attackRangedRange)

@@ -2,6 +2,13 @@ using System.Xml;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
+public enum EnemyType
+{
+    Melee = 0,
+    Ranged = 1,
+    Hybrid = 2
+}
+
 /// <summary>
 /// 적 FSM의 컨텍스트이자 전환기.
 /// - 공용 데이터(컴포넌트/파라미터/런타임 캐시)를 보관한다.
@@ -12,6 +19,7 @@ using UnityEngine;
 public class EnemyBrain : MonoBehaviour
 {
     [Header("Modules")]
+    public EnemyType enemyType = EnemyType.Hybrid;
     public EnemySenses senses;               // 시야 모듈(거리/각/가림)
     public Health health;                    // 체력(사망 트리거)
     public Transform player;                 // 추격/공격 대상 Transform
@@ -95,6 +103,11 @@ public class EnemyBrain : MonoBehaviour
 
         // 최초 상태 진입: Idle
         RequestStateChange(new IdleState(this));
+
+        if(health != null)
+        {
+            health.onChangedHP.AddListener(ChangeStateToRunAway);
+        }
     }
 
     private void Update()
@@ -324,5 +337,15 @@ public class EnemyBrain : MonoBehaviour
         bool got = Physics.Raycast(ray, out hit, rayLength, playerLayer, QueryTriggerInteraction.Ignore);
 
         return got;
+    }
+
+    void ChangeStateToRunAway()
+    {
+        if(currentState.Name() == "RunAway")
+        {
+            return;
+        }
+
+        RequestStateChange(new RunAwayState(this));
     }
 }
