@@ -13,7 +13,6 @@ using UnityEngine;
 ///
 /// 라인 프로토콜(LineProtocol)을 이용해 문자열 메시지를 주고받는다.
 /// </summary>
-[DisallowMultipleComponent]
 public class NetworkRunner : MonoBehaviour
 {
     public static NetworkRunner instance;                 // 전역 접근(씬에 1개)
@@ -57,6 +56,7 @@ public class NetworkRunner : MonoBehaviour
     }
 
     private Dictionary<int, PlayerInfo> players;          // 서버가 관리하는 플레이어 목록
+    private List<int> pendingRemoveClientIds = new List<int>(); // 클라이언트 제거 지연 처리용(열거 중 수정 방지)
 
     // ==== UI 연동 이벤트 ====
     public Action<string> onStatus;                       // 상태 로그 출력용
@@ -251,8 +251,6 @@ public class NetworkRunner : MonoBehaviour
 
     private void Server_PollReceive()
     {
-        List<int> toRemove = new List<int>();
-
         foreach (var kv in clients)
         {
             ClientConn cc = kv.Value;
@@ -287,12 +285,20 @@ public class NetworkRunner : MonoBehaviour
             // 여기서는 생략
         }
 
-        // 제거할 클라 정리
-        for (int i = 0; i < toRemove.Count; i = i + 1)
+        // === 루프가 끝난 뒤에 한꺼번에 제거 적용 ===
+        if (pendingRemoveClientIds != null && pendingRemoveClientIds.Count > 0)
         {
-            int id = toRemove[i];
-            Server_RemoveClient(id);
+            for (int i = 0; i < pendingRemoveClientIds.Count; i = i + 1)
+            {
+                int id = pendingRemoveClientIds[i];
+                Server_RemoveClient(id);
+            }
+            pendingRemoveClientIds.Clear();
+
+            // 실제 삭제가 반영된 상태를 한 번만 브로드캐스트
+            Server_BroadcastRoom();
         }
+
     }
 
     private void Server_HandleLine(ClientConn cc, string line)
@@ -353,8 +359,9 @@ public class NetworkRunner : MonoBehaviour
         }
         else if (cmd == "LEAVE")
         {
-            Server_RemoveClient(cc.id);
-            Server_BroadcastRoom();
+            // 열거 중 컬렉션 수정 에러를 막기 위해, 즉시 삭제하지 않고 대기열에 넣는다.
+            pendingRemoveClientIds.Add(cc.id);
+            // ROOM 방송은 실제 삭제가 적용된 뒤에 한 번만 하자(아래에서 처리됨).
         }
         else if (cmd == "START")
         {

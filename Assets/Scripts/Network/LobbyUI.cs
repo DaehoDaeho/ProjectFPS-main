@@ -9,7 +9,6 @@ using TMPro;
 /// - Toggle(Ready)
 /// - ≈ÿΩ∫∆Æ(Status/RoomList)
 /// </summary>
-[DisallowMultipleComponent]
 public class LobbyUI : MonoBehaviour
 {
     [Header("Inputs")]
@@ -158,7 +157,7 @@ public class LobbyUI : MonoBehaviour
         if (NetworkRunner.instance != null)
         {
             NetworkRunner.instance.ClientSendLine("LEAVE");
-            //NetworkRunner.instance.ClientDisconnect();
+            NetworkRunner.instance.ClientDisconnect();
         }
     }
 
