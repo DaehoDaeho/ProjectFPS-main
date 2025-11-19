@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// 로비에서 START 신호를 받으면 Game_Main 씬으로 전환.
 /// </summary>
-[DisallowMultipleComponent]
 public class SceneFlow : MonoBehaviour
 {
     public string gameSceneName = "Game_Main";   // 전환할 게임 씬 이름

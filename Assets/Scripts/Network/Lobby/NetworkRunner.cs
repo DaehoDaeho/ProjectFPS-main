@@ -65,13 +65,11 @@ public class NetworkRunner : MonoBehaviour
     public Action<bool> onClientConnectedChanged;         // 클라 접속 여부 알림
     public Action onStartSignal;                          // START 수신 알림
 
-    //=====================================================================
     // 게임 단계에서 사용할 서버/클라 커맨드 콜백
     // 서버: (fromClientId, cmd, payload)
     // 클라: (cmd, payload)
-    public System.Action<int, string, string> onServerCommand;
-    public System.Action<string, string> onClientCommand;
-    //=====================================================================
+    public Action<int, string, string> onServerCommand;
+    public Action<string, string> onClientCommand;
 
     private void Awake()
     {
@@ -385,14 +383,12 @@ public class NetworkRunner : MonoBehaviour
         }
         else
         {
-            //============================================================
             // 로비 외 커맨드는 게임 모듈로 전달
             if (onServerCommand != null)
             {
                 onServerCommand.Invoke(cc.id, cmd, payload);
                 return;
             }
-            //============================================================
 
             if (onStatus != null)
             {
@@ -640,14 +636,12 @@ public class NetworkRunner : MonoBehaviour
         }
         else
         {
-            //======================================================
             // 게임 단계 커맨드는 클라 모듈로 전달
             if (onClientCommand != null)
             {
                 onClientCommand.Invoke(cmd, payload);
                 return;
             }
-            //======================================================
 
             // 기타 메시지는 상태 로그로 출력
             if (onStatus != null)
@@ -676,13 +670,11 @@ public class NetworkRunner : MonoBehaviour
 
         Server_BroadcastLine("START");
 
-        //=============================================================
         // 호스트 자신에게도 즉시 START 신호 발생 (중요!)
         if (onStartSignal != null)
         {
             onStartSignal.Invoke();
         }
-        //=============================================================
 
         if (onStatus != null)
         {
@@ -731,7 +723,6 @@ public class NetworkRunner : MonoBehaviour
         Server_BroadcastRoom();
     }
 
-    //========================================================
     public void ServerBroadcastLinePublic(string line)
     {
         // 1) 네트워크로 클라이언트들에게 방송
@@ -790,5 +781,4 @@ public class NetworkRunner : MonoBehaviour
             onServerCommand.Invoke(fromClientId, cmd, payload);
         }
     }
-    //========================================================
 }
