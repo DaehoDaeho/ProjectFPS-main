@@ -65,6 +65,14 @@ public class NetworkRunner : MonoBehaviour
     public Action<bool> onClientConnectedChanged;         // 클라 접속 여부 알림
     public Action onStartSignal;                          // START 수신 알림
 
+    //=====================================================================
+    // 게임 단계에서 사용할 서버/클라 커맨드 콜백
+    // 서버: (fromClientId, cmd, payload)
+    // 클라: (cmd, payload)
+    public System.Action<int, string, string> onServerCommand;
+    public System.Action<string, string> onClientCommand;
+    //=====================================================================
+
     private void Awake()
     {
         if (instance == null)
@@ -80,6 +88,9 @@ public class NetworkRunner : MonoBehaviour
         clients = new Dictionary<int, ClientConn>();
         players = new Dictionary<int, PlayerInfo>();
         nextClientId = 1;
+
+        // Runner를 씬 전환 후에도 유지
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Update()
@@ -374,6 +385,15 @@ public class NetworkRunner : MonoBehaviour
         }
         else
         {
+            //============================================================
+            // 로비 외 커맨드는 게임 모듈로 전달
+            if (onServerCommand != null)
+            {
+                onServerCommand.Invoke(cc.id, cmd, payload);
+                return;
+            }
+            //============================================================
+
             if (onStatus != null)
             {
                 onStatus.Invoke($"Unknown cmd from {cc.id}: {cmd}");
@@ -620,6 +640,15 @@ public class NetworkRunner : MonoBehaviour
         }
         else
         {
+            //======================================================
+            // 게임 단계 커맨드는 클라 모듈로 전달
+            if (onClientCommand != null)
+            {
+                onClientCommand.Invoke(cmd, payload);
+                return;
+            }
+            //======================================================
+
             // 기타 메시지는 상태 로그로 출력
             if (onStatus != null)
             {
@@ -646,6 +675,15 @@ public class NetworkRunner : MonoBehaviour
         }
 
         Server_BroadcastLine("START");
+
+        //=============================================================
+        // 호스트 자신에게도 즉시 START 신호 발생 (중요!)
+        if (onStartSignal != null)
+        {
+            onStartSignal.Invoke();
+        }
+        //=============================================================
+
         if (onStatus != null)
         {
             onStatus.Invoke("START broadcasted by host.");
@@ -693,4 +731,64 @@ public class NetworkRunner : MonoBehaviour
         Server_BroadcastRoom();
     }
 
+    //========================================================
+    public void ServerBroadcastLinePublic(string line)
+    {
+        // 1) 네트워크로 클라이언트들에게 방송
+        if (serverRunning == true)
+        {
+            Server_BroadcastLine(line);
+        }
+
+        // 2) 호스트(서버) 로컬에도 같은 내용을 전달해 호스트 화면에서도 적용되게 함
+        //    (ClientGame.OnClientCommand -> ApplyStateJson 이 호출되도록)
+        int bar = line.IndexOf('|');
+        string cmd = bar >= 0 ? line.Substring(0, bar) : line;
+        string payload = bar >= 0 ? line.Substring(bar + 1) : string.Empty;
+
+        // STATE 외에도 필요하면 다른 메시지도 로컬 반영 가능
+        if (cmd == "STATE")
+        {
+            if (onClientCommand != null)
+            {
+                onClientCommand.Invoke(cmd, payload);
+            }
+        }
+    }
+
+    // 실제 참가자 id를 반환
+    public List<int> GetCurrentPlayerIdsSnapshot()
+    {
+        List<int> ids = new List<int>();
+
+        // players 딕셔너리는: id=0 (호스트; includeHostInRoom==true일 때) + 클라들(1..N)
+        if (players != null)
+        {
+            foreach (var kv in players)
+            {
+                ids.Add(kv.Key);
+            }
+        }
+
+        // 정렬은 선택 사항(보기 좋게)
+        ids.Sort();
+
+        return ids;
+    }
+
+    public void ServerInjectCommand(int fromClientId, string cmd, string payload)
+    {
+        // 서버가 켜져 있을 때, 네트워크 경유 없이
+        // 서버 콜백(onServerCommand)을 직접 호출해 로컬 입력을 주입한다.
+        if (serverRunning == false)
+        {
+            return;
+        }
+
+        if (onServerCommand != null)
+        {
+            onServerCommand.Invoke(fromClientId, cmd, payload);
+        }
+    }
+    //========================================================
 }
