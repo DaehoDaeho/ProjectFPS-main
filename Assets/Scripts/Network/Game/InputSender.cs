@@ -50,15 +50,8 @@ public class InputSender : MonoBehaviour
             SendInput(mx, my);
             sendAccumulator = sendAccumulator - interval;
         }
-
-        if (Input.GetKeyDown(KeyCode.W) == true)
-        {
-            float vtest = Input.GetAxisRaw("Vertical");   // ±â´ë: W = +1
-            Debug.Log("Vertical on W = " + vtest);
-        }
     }
 
-    //============================================================
     private void SendInput(float mx, float my)
     {
         if (NetworkRunner.instance == null)
@@ -100,5 +93,4 @@ public class InputSender : MonoBehaviour
             return;
         }
     }
-    //============================================================
 }

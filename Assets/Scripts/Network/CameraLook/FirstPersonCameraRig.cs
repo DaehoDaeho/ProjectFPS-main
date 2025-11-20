@@ -3,11 +3,11 @@
 public class FirstPersonCameraRig : MonoBehaviour
 {
     [Header("Refs")]
-    public Transform target;
-    public Transform cameraPivot;
-    public Camera worldCamera;
-    public Camera viewmodelCamera;
-    public Transform viewmodelRoot;
+    public Transform target;    // 내 플레이어.
+    public Transform cameraPivot;   // 카메라 피봇.
+    public Camera worldCamera;  // 메인 카메라.
+    public Camera viewmodelCamera;  // 뷰 모델 카메라.
+    public Transform viewmodelRoot; // 뷰 모델 루트.
 
     [Header("Settings")]
     public float eyeHeight = 1.6f;

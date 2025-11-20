@@ -4,7 +4,6 @@ using UnityEngine;
 /// STATE가 도착해 아바타가 생성된 뒤, 내 아바타 Transform을 찾아
 /// FirstPersonCameraRig.target에 바인딩하고 전방 정렬까지 수행.
 /// </summary>
-[DisallowMultipleComponent]
 public class FirstPersonAutoBind : MonoBehaviour
 {
     public FirstPersonCameraRig rig;

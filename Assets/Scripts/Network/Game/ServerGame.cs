@@ -18,16 +18,6 @@ public class ServerGame : MonoBehaviour
     private Dictionary<int, PlayerSim> sims;  // 각 플레이어의 시뮬레이션 상태
 
     // 클라이언트가 보낸 최근 입력을 저장
-    //private class PendingInput
-    //{
-    //    public float mx;     // 좌/우 입력(-1~1)
-    //    public float my;     // 전/후 입력(-1~1)
-    //    public float yaw;    // 수평 각(도)
-    //    public float pitch;  // 수직 각(도) - 이동에는 사용하지 않지만 서버 보관
-    //    public bool fire;    // 발사 버튼(이번 단계에서는 미사용)
-    //}
-
-    //===========================================================
     private class PendingInput
     {
         public float worldX;   // 월드 기준 이동 X(우+ 좌-)
@@ -35,7 +25,6 @@ public class ServerGame : MonoBehaviour
         public float yaw;      // 시선 각(도)
         public float pitch;    // 필요 시 사용
     }
-    //===========================================================
 
     private class PlayerSim
     {
@@ -202,50 +191,9 @@ public class ServerGame : MonoBehaviour
             return;
         }
 
-        //if (cmd == "INPUT")
-        //{
-        //    // payload: "mx,my,yaw,pitch,fire"
-        //    string[] parts = payload.Split(',');
-        //    if (parts == null)
-        //    {
-        //        return;
-        //    }
-        //    if (parts.Length < 5)
-        //    {
-        //        return;
-        //    }
-
-        //    float mx = 0.0f;
-        //    float my = 0.0f;
-        //    float yaw = 0.0f;
-        //    float pitch = 0.0f;
-        //    int fireInt = 0;
-
-        //    float.TryParse(parts[0], out mx);
-        //    float.TryParse(parts[1], out my);
-        //    float.TryParse(parts[2], out yaw);
-        //    float.TryParse(parts[3], out pitch);
-        //    int.TryParse(parts[4], out fireInt);
-
-        //    bool fire = fireInt == 1 ? true : false;
-
-        //    if (sims.ContainsKey(fromClientId) == true)
-        //    {
-        //        PlayerSim sim = sims[fromClientId];
-        //        if (sim != null && sim.input != null)
-        //        {
-        //            sim.input.mx = mx;
-        //            sim.input.my = my;
-        //            sim.input.yaw = yaw;
-        //            sim.input.pitch = pitch;
-        //            sim.input.fire = fire;
-        //        }
-        //    }
-        //}
         // 추후 FIRE 판정 추가 예정
     }
 
-    //======================================================
     private void HandleInputWorld(int fromClientId, string payload)
     {
         // payload: "wx,wz,yaw,pitch" (InvariantCulture 로 들어옴)
@@ -284,5 +232,4 @@ public class ServerGame : MonoBehaviour
             }
         }
     }
-    //======================================================
 }
