@@ -15,6 +15,11 @@ public class ClientGame : MonoBehaviour
     // id → Transform
     private Dictionary<int, Transform> avatars;
 
+    //============================================================
+    private Dictionary<int, float> lastYawById = new Dictionary<int, float>();
+    private Dictionary<int, float> lastPitchById = new Dictionary<int, float>();
+    //============================================================
+
     private void Awake()
     {
         avatars = new Dictionary<int, Transform>();
@@ -92,6 +97,12 @@ public class ClientGame : MonoBehaviour
             // 적용(보간 없음)
             t.position = new Vector3(x, y, z);
             t.rotation = Quaternion.Euler(0.0f, yaw, 0.0f);
+
+            //===========================================================
+            // 예: p.id, p.yaw, p.pitch 를 파싱한 직후
+            lastYawById[id] = yaw;
+            lastPitchById[id] = 0;
+            //===========================================================
         }
     }
 
@@ -119,4 +130,26 @@ public class ClientGame : MonoBehaviour
             return go.transform;
         }
     }
+
+    //==============================================================
+    public bool TryGetLastAngles(int id, out float yaw, out float pitch)
+    {
+        yaw = 0.0f;
+        pitch = 0.0f;
+        bool ok = false;
+
+        if (lastYawById.ContainsKey(id) == true)
+        {
+            yaw = lastYawById[id];
+            ok = true;
+        }
+        if (lastPitchById.ContainsKey(id) == true)
+        {
+            pitch = lastPitchById[id];
+            // ok는 그대로 유지(둘 다 있으면 true, 하나만 있어도 true)
+            ok = true;
+        }
+        return ok;
+    }
+    //==============================================================
 }

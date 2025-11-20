@@ -18,14 +18,24 @@ public class ServerGame : MonoBehaviour
     private Dictionary<int, PlayerSim> sims;  // 각 플레이어의 시뮬레이션 상태
 
     // 클라이언트가 보낸 최근 입력을 저장
+    //private class PendingInput
+    //{
+    //    public float mx;     // 좌/우 입력(-1~1)
+    //    public float my;     // 전/후 입력(-1~1)
+    //    public float yaw;    // 수평 각(도)
+    //    public float pitch;  // 수직 각(도) - 이동에는 사용하지 않지만 서버 보관
+    //    public bool fire;    // 발사 버튼(이번 단계에서는 미사용)
+    //}
+
+    //===========================================================
     private class PendingInput
     {
-        public float mx;     // 좌/우 입력(-1~1)
-        public float my;     // 전/후 입력(-1~1)
-        public float yaw;    // 수평 각(도)
-        public float pitch;  // 수직 각(도) - 이동에는 사용하지 않지만 서버 보관
-        public bool fire;    // 발사 버튼(이번 단계에서는 미사용)
+        public float worldX;   // 월드 기준 이동 X(우+ 좌-)
+        public float worldZ;   // 월드 기준 이동 Z(앞+ 뒤-)
+        public float yaw;      // 시선 각(도)
+        public float pitch;    // 필요 시 사용
     }
+    //===========================================================
 
     private class PlayerSim
     {
@@ -132,23 +142,17 @@ public class ServerGame : MonoBehaviour
                 continue;
             }
 
-            // 수평면 이동 벡터 계산
-            // yaw(도) -> 라디안 -> 전방/우측 벡터
-            float yawRad = input.yaw * Mathf.Deg2Rad;
-            Vector3 forward = new Vector3(Mathf.Sin(yawRad), 0.0f, Mathf.Cos(yawRad));
-            Vector3 right = new Vector3(forward.z * -1.0f, 0.0f, forward.x); // Vector3.Cross(Vector3.up, forward)와 동일한 평면 내 우측
-
-            Vector3 wish = (right * input.mx) + (forward * input.my);
+            // 1) 이미 월드 방향으로 온 값 사용
+            Vector3 wish = new Vector3(input.worldX, 0.0f, input.worldZ);
 
             if (wish.sqrMagnitude > 0.0001f)
             {
                 wish = wish.normalized;
+                Vector3 delta = wish * moveSpeed * dt;
+                sim.position = sim.position + delta;
             }
 
-            Vector3 delta = wish * moveSpeed * dt;
-            sim.position = sim.position + delta;
-
-            // 회전 각 업데이트(시선)
+            // 2) 각도 유지(시야 연출용)
             sim.yaw = input.yaw;
             sim.pitch = input.pitch;
         }
@@ -192,46 +196,93 @@ public class ServerGame : MonoBehaviour
 
     private void OnServerCommand(int fromClientId, string cmd, string payload)
     {
-        if (cmd == "INPUT")
+        if (cmd == "INPUTW")
         {
-            // payload: "mx,my,yaw,pitch,fire"
-            string[] parts = payload.Split(',');
-            if (parts == null)
-            {
-                return;
-            }
-            if (parts.Length < 5)
-            {
-                return;
-            }
-
-            float mx = 0.0f;
-            float my = 0.0f;
-            float yaw = 0.0f;
-            float pitch = 0.0f;
-            int fireInt = 0;
-
-            float.TryParse(parts[0], out mx);
-            float.TryParse(parts[1], out my);
-            float.TryParse(parts[2], out yaw);
-            float.TryParse(parts[3], out pitch);
-            int.TryParse(parts[4], out fireInt);
-
-            bool fire = fireInt == 1 ? true : false;
-
-            if (sims.ContainsKey(fromClientId) == true)
-            {
-                PlayerSim sim = sims[fromClientId];
-                if (sim != null && sim.input != null)
-                {
-                    sim.input.mx = mx;
-                    sim.input.my = my;
-                    sim.input.yaw = yaw;
-                    sim.input.pitch = pitch;
-                    sim.input.fire = fire;
-                }
-            }
+            HandleInputWorld(fromClientId, payload);
+            return;
         }
+
+        //if (cmd == "INPUT")
+        //{
+        //    // payload: "mx,my,yaw,pitch,fire"
+        //    string[] parts = payload.Split(',');
+        //    if (parts == null)
+        //    {
+        //        return;
+        //    }
+        //    if (parts.Length < 5)
+        //    {
+        //        return;
+        //    }
+
+        //    float mx = 0.0f;
+        //    float my = 0.0f;
+        //    float yaw = 0.0f;
+        //    float pitch = 0.0f;
+        //    int fireInt = 0;
+
+        //    float.TryParse(parts[0], out mx);
+        //    float.TryParse(parts[1], out my);
+        //    float.TryParse(parts[2], out yaw);
+        //    float.TryParse(parts[3], out pitch);
+        //    int.TryParse(parts[4], out fireInt);
+
+        //    bool fire = fireInt == 1 ? true : false;
+
+        //    if (sims.ContainsKey(fromClientId) == true)
+        //    {
+        //        PlayerSim sim = sims[fromClientId];
+        //        if (sim != null && sim.input != null)
+        //        {
+        //            sim.input.mx = mx;
+        //            sim.input.my = my;
+        //            sim.input.yaw = yaw;
+        //            sim.input.pitch = pitch;
+        //            sim.input.fire = fire;
+        //        }
+        //    }
+        //}
         // 추후 FIRE 판정 추가 예정
     }
+
+    //======================================================
+    private void HandleInputWorld(int fromClientId, string payload)
+    {
+        // payload: "wx,wz,yaw,pitch" (InvariantCulture 로 들어옴)
+        string[] parts = payload.Split(',');
+        if (parts == null)
+        {
+            return;
+        }
+        if (parts.Length < 4)
+        {
+            return;
+        }
+
+        // Culture 안전 파싱
+        System.Globalization.CultureInfo inv = System.Globalization.CultureInfo.InvariantCulture;
+
+        float wx = 0.0f;
+        float wz = 0.0f;
+        float yawDeg = 0.0f;
+        float pitchDeg = 0.0f;
+
+        float.TryParse(parts[0], System.Globalization.NumberStyles.Float, inv, out wx);
+        float.TryParse(parts[1], System.Globalization.NumberStyles.Float, inv, out wz);
+        float.TryParse(parts[2], System.Globalization.NumberStyles.Float, inv, out yawDeg);
+        float.TryParse(parts[3], System.Globalization.NumberStyles.Float, inv, out pitchDeg);
+
+        if (sims.ContainsKey(fromClientId) == true)
+        {
+            PlayerSim sim = sims[fromClientId];
+            if (sim != null && sim.input != null)
+            {
+                sim.input.worldX = wx;
+                sim.input.worldZ = wz;
+                sim.input.yaw = yawDeg;
+                sim.input.pitch = pitchDeg;
+            }
+        }
+    }
+    //======================================================
 }

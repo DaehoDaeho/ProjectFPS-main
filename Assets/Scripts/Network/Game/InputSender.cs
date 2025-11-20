@@ -1,3 +1,4 @@
+using System.Globalization;
 using UnityEngine;
 
 /// <summary>
@@ -49,8 +50,15 @@ public class InputSender : MonoBehaviour
             SendInput(mx, my);
             sendAccumulator = sendAccumulator - interval;
         }
+
+        if (Input.GetKeyDown(KeyCode.W) == true)
+        {
+            float vtest = Input.GetAxisRaw("Vertical");   // 기대: W = +1
+            Debug.Log("Vertical on W = " + vtest);
+        }
     }
 
+    //============================================================
     private void SendInput(float mx, float my)
     {
         if (NetworkRunner.instance == null)
@@ -58,27 +66,39 @@ public class InputSender : MonoBehaviour
             return;
         }
 
-        int fire = 0; // 추후 사용할 예정
-        string payload = $"{mx:F3},{my:F3},{yaw:F1},{pitch:F1},{fire}";
+        // 1) 내 카메라 yaw로 로컬 입력(mx,my)을 월드 방향으로 회전
+        Vector3 moveLocal = new Vector3(mx, 0.0f, my);
+        Quaternion rot = Quaternion.Euler(0.0f, yaw, 0.0f);
+        Vector3 worldDir = rot * moveLocal;                  // (wx, 0, wz)
+
+        // 2) 정규화(대각선 속도 보정)
+        if (worldDir.sqrMagnitude > 0.0001f)
+        {
+            worldDir = worldDir.normalized;
+        }
+
+        // 3) 로케일에 영향을 받지 않도록 InvariantCulture로 문자열 구성
+        //    payload: wx,wz,yaw,pitch
+        string payload =
+            worldDir.x.ToString("F3", CultureInfo.InvariantCulture) + "," +
+            worldDir.z.ToString("F3", CultureInfo.InvariantCulture) + "," +
+            yaw.ToString("F1", CultureInfo.InvariantCulture) + "," +
+            pitch.ToString("F1", CultureInfo.InvariantCulture);
 
         bool isClient = NetworkRunner.instance.IsClientConnected();
         bool isServer = NetworkRunner.instance.IsServerRunning();
 
-        // 1) 일반 클라이언트: 네트워크로 INPUT 전송
         if (isClient == true)
         {
-            string line = "INPUT|" + payload;
-            NetworkRunner.instance.ClientSendLine(line);
+            NetworkRunner.instance.ClientSendLine("INPUTW|" + payload);
             return;
         }
 
-        // 2) 호스트 전용 경로: 서버에 직접 주입(fromClientId = 0)
         if (isServer == true && isClient == false)
         {
-            NetworkRunner.instance.ServerInjectCommand(0, "INPUT", payload);
+            NetworkRunner.instance.ServerInjectCommand(0, "INPUTW", payload);
             return;
         }
-
-        // 그 외(서버/클라 모두 아님)면 아무 것도 하지 않는다.
     }
+    //============================================================
 }
