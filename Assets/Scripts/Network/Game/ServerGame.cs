@@ -28,14 +28,6 @@ public class ServerGame : MonoBehaviour
 
     private class PlayerSim
     {
-        //public int id;                 // 플레이어 ID
-        //public string name;            // 닉네임(옵션)
-        //public Vector3 position;       // 월드 좌표
-        //public float yaw;              // 도(수평)
-        //public float pitch;            // 도(수직)
-        //public int hp;                 // 체력
-        //public PendingInput input;     // 최신 입력(없으면 정지)
-        //==================================================================
         public int id;                 // 플레이어 식별자
         public string name;            // 닉네임(옵션)
         public Vector3 position;       // 월드 위치(발 위치)
@@ -46,10 +38,8 @@ public class ServerGame : MonoBehaviour
         public float lastFireTime;     // 마지막 발사 시각(쿨다운 제어)
         public Damageable damageable;  // 이 플레이어의 Damageable (아바타 루트에 붙이거나 참조)
         public Transform root;
-        //==================================================================
     }
 
-    //=================================================================
     [Header("Fire Settings")]
     public float fireCooldown = 0.12f;     // 발사 쿨다운(초), 예: 500RPM 0.12
     public float rayMaxDistance = 150.0f;  // 히트스캔 레이 최대 거리
@@ -58,8 +48,7 @@ public class ServerGame : MonoBehaviour
     public LayerMask hitMask;              // 피격 레이어 마스크(예: Hitbox)
 
     public bool ignoreSpawnPointRotation = true; // 회전 무시(항상 +Z)
-    //=================================================================
-
+    
     private void Awake()
     {
         sims = new Dictionary<int, PlayerSim>();
@@ -214,14 +203,11 @@ public class ServerGame : MonoBehaviour
             return;
         }
 
-        // 추후 FIRE 판정 추가 예정
-        //========================================================
         if (cmd == "FIRE")
         {
             HandleFire(fromClientId);
             return;
         }
-        //========================================================
     }
 
     private void HandleInputWorld(int fromClientId, string payload)
@@ -263,7 +249,6 @@ public class ServerGame : MonoBehaviour
         }
     }
 
-    //==============================================================
     private void HandleFire(int fromClientId)
     {
         PlayerSim sim;
@@ -288,7 +273,7 @@ public class ServerGame : MonoBehaviour
         // 레이 원점: position + eyeHeight
         Vector3 eye = sim.position + new Vector3(0.0f, eyeHeight, 0.0f);
 
-        // yaw/pitch → 전방 벡터
+        // yaw/pitch -> 전방 벡터
         float yawRad = sim.yaw * Mathf.Deg2Rad;
         float pitchRad = sim.pitch * Mathf.Deg2Rad;
 
@@ -391,5 +376,4 @@ public class ServerGame : MonoBehaviour
             sims[id].root = root;
         }
     }
-    //==========================================================
 }
