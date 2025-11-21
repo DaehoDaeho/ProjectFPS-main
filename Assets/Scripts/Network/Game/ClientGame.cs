@@ -116,6 +116,15 @@ public class ClientGame : MonoBehaviour
             capsule.name = $"Avatar_{id}";
             capsule.transform.SetParent(avatarsRoot, false);
             avatars.Add(id, capsule.transform);
+
+            //======================================================
+            ServerGame sg = GetComponent<ServerGame>();
+            if (sg != null)
+            {
+                sg.SetRoot(id, capsule.transform);
+            }
+            //======================================================
+
             return capsule.transform;
         }
         else
@@ -123,6 +132,15 @@ public class ClientGame : MonoBehaviour
             GameObject go = GameObject.Instantiate(avatarPrefab, avatarsRoot);
             go.name = $"Avatar_{id}";
             avatars.Add(id, go.transform);
+
+            //======================================================
+            ServerGame sg = GetComponent<ServerGame>();
+            if (sg != null)
+            {
+                sg.SetRoot(id, go.transform);
+            }
+            //======================================================
+
             return go.transform;
         }
     }

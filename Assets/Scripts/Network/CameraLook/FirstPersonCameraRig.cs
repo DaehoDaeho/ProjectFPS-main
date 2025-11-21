@@ -40,21 +40,21 @@ public class FirstPersonCameraRig : MonoBehaviour
         // 자식 연결(로컬 회전 0을 강제)
         if (worldCamera != null)
         {
-            worldCamera.transform.SetParent(cameraPivot, false);
-            worldCamera.transform.localPosition = Vector3.zero;
-            worldCamera.transform.localRotation = Quaternion.identity;
+            //worldCamera.transform.SetParent(cameraPivot, false);
+            //worldCamera.transform.localPosition = Vector3.zero;
+            //worldCamera.transform.localRotation = Quaternion.identity;
         }
 
         if (viewmodelCamera != null)
         {
-            viewmodelCamera.transform.SetParent(cameraPivot, false);
-            viewmodelCamera.transform.localPosition = Vector3.zero;
-            viewmodelCamera.transform.localRotation = Quaternion.identity;
+            //viewmodelCamera.transform.SetParent(cameraPivot, false);
+            //viewmodelCamera.transform.localPosition = Vector3.zero;
+            //viewmodelCamera.transform.localRotation = Quaternion.identity;
         }
 
         if (viewmodelRoot != null)
         {
-            viewmodelRoot.SetParent(cameraPivot, false);
+            //viewmodelRoot.SetParent(cameraPivot, false);
         }
     }
 

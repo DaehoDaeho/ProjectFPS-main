@@ -1,41 +1,64 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ¼­¹ö ±ÇÇÑ ÀÌµ¿ ½Ã¹Ä·¹ÀÌ¼Ç°ú STATE ¹æ¼ÛÀ» ´ã´ç.
-/// - Å¬¶óÀÌ¾ğÆ®ÀÇ INPUTÀ» ¹Ş¾Æ ¼­¹ö¿¡¼­ ÁÂÇ¥/È¸ÀüÀ» °è»ê.
-/// - ÀÏÁ¤ ÁÖ±â·Î STATE¸¦ ºê·ÎµåÄ³½ºÆ®.
+/// ì„œë²„ ê¶Œí•œ ì´ë™ ì‹œë®¬ë ˆì´ì…˜ê³¼ STATE ë°©ì†¡ì„ ë‹´ë‹¹.
+/// - í´ë¼ì´ì–¸íŠ¸ì˜ INPUTì„ ë°›ì•„ ì„œë²„ì—ì„œ ì¢Œí‘œ/íšŒì „ì„ ê³„ì‚°.
+/// - ì¼ì • ì£¼ê¸°ë¡œ STATEë¥¼ ë¸Œë¡œë“œìºìŠ¤íŠ¸.
 /// </summary>
 public class ServerGame : MonoBehaviour
 {
     [Header("Settings")]
-    public float tickRate = 20.0f;         // ¼­¹ö Æ½(ÃÊ´ç 20È¸ -> dt=0.05)
-    public float moveSpeed = 4.5f;         // ÀÌµ¿ ¼Óµµ(m/s)
-    public Transform[] spawnPoints;        // ½ºÆù À§Ä¡ ¸ñ·Ï
+    public float tickRate = 20.0f;         // ì„œë²„ í‹±(ì´ˆë‹¹ 20íšŒ -> dt=0.05)
+    public float moveSpeed = 4.5f;         // ì´ë™ ì†ë„(m/s)
+    public Transform[] spawnPoints;        // ìŠ¤í° ìœ„ì¹˜ ëª©ë¡
 
-    private float tickAccumulator;         // Æ½ ´©Àû ½Ã°£
-    private Dictionary<int, PlayerSim> sims;  // °¢ ÇÃ·¹ÀÌ¾îÀÇ ½Ã¹Ä·¹ÀÌ¼Ç »óÅÂ
+    private float tickAccumulator;         // í‹± ëˆ„ì  ì‹œê°„
+    private Dictionary<int, PlayerSim> sims;  // ê° í”Œë ˆì´ì–´ì˜ ì‹œë®¬ë ˆì´ì…˜ ìƒíƒœ
 
-    // Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ ÃÖ±Ù ÀÔ·ÂÀ» ÀúÀå
+    // í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ ìµœê·¼ ì…ë ¥ì„ ì €ì¥
     private class PendingInput
     {
-        public float worldX;   // ¿ùµå ±âÁØ ÀÌµ¿ X(¿ì+ ÁÂ-)
-        public float worldZ;   // ¿ùµå ±âÁØ ÀÌµ¿ Z(¾Õ+ µÚ-)
-        public float yaw;      // ½Ã¼± °¢(µµ)
-        public float pitch;    // ÇÊ¿ä ½Ã »ç¿ë
+        public float worldX;   // ì›”ë“œ ê¸°ì¤€ ì´ë™ X(ìš°+ ì¢Œ-)
+        public float worldZ;   // ì›”ë“œ ê¸°ì¤€ ì´ë™ Z(ì•+ ë’¤-)
+        public float yaw;      // ì‹œì„  ê°(ë„)
+        public float pitch;    // í•„ìš” ì‹œ ì‚¬ìš©
     }
 
     private class PlayerSim
     {
-        public int id;                 // ÇÃ·¹ÀÌ¾î ID
-        public string name;            // ´Ğ³×ÀÓ(¿É¼Ç)
-        public Vector3 position;       // ¿ùµå ÁÂÇ¥
-        public float yaw;              // µµ(¼öÆò)
-        public float pitch;            // µµ(¼öÁ÷)
-        public int hp;                 // Ã¼·Â
-        public PendingInput input;     // ÃÖ½Å ÀÔ·Â(¾øÀ¸¸é Á¤Áö)
+        //public int id;                 // í”Œë ˆì´ì–´ ID
+        //public string name;            // ë‹‰ë„¤ì„(ì˜µì…˜)
+        //public Vector3 position;       // ì›”ë“œ ì¢Œí‘œ
+        //public float yaw;              // ë„(ìˆ˜í‰)
+        //public float pitch;            // ë„(ìˆ˜ì§)
+        //public int hp;                 // ì²´ë ¥
+        //public PendingInput input;     // ìµœì‹  ì…ë ¥(ì—†ìœ¼ë©´ ì •ì§€)
+        //==================================================================
+        public int id;                 // í”Œë ˆì´ì–´ ì‹ë³„ì
+        public string name;            // ë‹‰ë„¤ì„(ì˜µì…˜)
+        public Vector3 position;       // ì›”ë“œ ìœ„ì¹˜(ë°œ ìœ„ì¹˜)
+        public float yaw;              // ìˆ˜í‰ ì‹œì•¼(ë„)
+        public float pitch;            // ìˆ˜ì§ ì‹œì•¼(ë„)
+        public int hp;                 // ì²´ë ¥
+        public PendingInput input;     // ìµœì‹  ì…ë ¥(ì—†ìœ¼ë©´ ì •ì§€)
+        public float lastFireTime;     // ë§ˆì§€ë§‰ ë°œì‚¬ ì‹œê°(ì¿¨ë‹¤ìš´ ì œì–´)
+        public Damageable damageable;  // ì´ í”Œë ˆì´ì–´ì˜ Damageable (ì•„ë°”íƒ€ ë£¨íŠ¸ì— ë¶™ì´ê±°ë‚˜ ì°¸ì¡°)
+        public Transform root;
+        //==================================================================
     }
+
+    //=================================================================
+    [Header("Fire Settings")]
+    public float fireCooldown = 0.12f;     // ë°œì‚¬ ì¿¨ë‹¤ìš´(ì´ˆ), ì˜ˆ: 500RPM 0.12
+    public float rayMaxDistance = 150.0f;  // íˆíŠ¸ìŠ¤ìº” ë ˆì´ ìµœëŒ€ ê±°ë¦¬
+    public int damagePerShot = 20;         // í•œ ë°œ ë°ë¯¸ì§€
+    public float eyeHeight = 1.6f;         // ì‹œì•¼ ë†’ì´(ì„œë²„ê°€ ë ˆì´ ìƒì„± ì‹œ ì‚¬ìš©)
+    public LayerMask hitMask;              // í”¼ê²© ë ˆì´ì–´ ë§ˆìŠ¤í¬(ì˜ˆ: Hitbox)
+
+    public bool ignoreSpawnPointRotation = true; // íšŒì „ ë¬´ì‹œ(í•­ìƒ +Z)
+    //=================================================================
 
     private void Awake()
     {
@@ -44,7 +67,7 @@ public class ServerGame : MonoBehaviour
 
     private void OnEnable()
     {
-        // ¼­¹ö¸¸ µ¿ÀÛ
+        // ì„œë²„ë§Œ ë™ì‘
         if (NetworkRunner.instance != null)
         {
             NetworkRunner.instance.onServerCommand += OnServerCommand;
@@ -60,7 +83,7 @@ public class ServerGame : MonoBehaviour
     }
 
     /// <summary>
-    /// °ÔÀÓ ¾À ½ÃÀÛ ½Ã, ·Îºñ¿¡ ÀÖ´ø Âü°¡ÀÚµéÀ» ½ºÆùÇÑ´Ù.
+    /// ê²Œì„ ì”¬ ì‹œì‘ ì‹œ, ë¡œë¹„ì— ìˆë˜ ì°¸ê°€ìë“¤ì„ ìŠ¤í°í•œë‹¤.
     /// </summary>
     public void SpawnPlayersInitial(IReadOnlyList<int> playerIds)
     {
@@ -93,7 +116,7 @@ public class ServerGame : MonoBehaviour
 
     private void Update()
     {
-        // ¼­¹ö ¾Æ´Ñ °æ¿ì µ¿ÀÛ ¾È ÇÔ
+        // ì„œë²„ ì•„ë‹Œ ê²½ìš° ë™ì‘ ì•ˆ í•¨
         if (NetworkRunner.instance == null)
         {
             return;
@@ -116,7 +139,7 @@ public class ServerGame : MonoBehaviour
 
     private void ServerTick(float dt)
     {
-        // ÀÔ·Â Àû¿ë -> À§Ä¡/È¸Àü °»½Å
+        // ì…ë ¥ ì ìš© -> ìœ„ì¹˜/íšŒì „ ê°±ì‹ 
         foreach (var kv in sims)
         {
             PlayerSim sim = kv.Value;
@@ -131,7 +154,7 @@ public class ServerGame : MonoBehaviour
                 continue;
             }
 
-            // 1) ÀÌ¹Ì ¿ùµå ¹æÇâÀ¸·Î ¿Â °ª »ç¿ë
+            // 1) ì´ë¯¸ ì›”ë“œ ë°©í–¥ìœ¼ë¡œ ì˜¨ ê°’ ì‚¬ìš©
             Vector3 wish = new Vector3(input.worldX, 0.0f, input.worldZ);
 
             if (wish.sqrMagnitude > 0.0001f)
@@ -141,12 +164,12 @@ public class ServerGame : MonoBehaviour
                 sim.position = sim.position + delta;
             }
 
-            // 2) °¢µµ À¯Áö(½Ã¾ß ¿¬Ãâ¿ë)
+            // 2) ê°ë„ ìœ ì§€(ì‹œì•¼ ì—°ì¶œìš©)
             sim.yaw = input.yaw;
             sim.pitch = input.pitch;
         }
 
-        // ÁÖ±âÀûÀ¸·Î STATE ¹æ¼Û
+        // ì£¼ê¸°ì ìœ¼ë¡œ STATE ë°©ì†¡
         BroadcastState();
     }
 
@@ -191,12 +214,19 @@ public class ServerGame : MonoBehaviour
             return;
         }
 
-        // ÃßÈÄ FIRE ÆÇÁ¤ Ãß°¡ ¿¹Á¤
+        // ì¶”í›„ FIRE íŒì • ì¶”ê°€ ì˜ˆì •
+        //========================================================
+        if (cmd == "FIRE")
+        {
+            HandleFire(fromClientId);
+            return;
+        }
+        //========================================================
     }
 
     private void HandleInputWorld(int fromClientId, string payload)
     {
-        // payload: "wx,wz,yaw,pitch" (InvariantCulture ·Î µé¾î¿È)
+        // payload: "wx,wz,yaw,pitch" (InvariantCulture ë¡œ ë“¤ì–´ì˜´)
         string[] parts = payload.Split(',');
         if (parts == null)
         {
@@ -207,7 +237,7 @@ public class ServerGame : MonoBehaviour
             return;
         }
 
-        // Culture ¾ÈÀü ÆÄ½Ì
+        // Culture ì•ˆì „ íŒŒì‹±
         System.Globalization.CultureInfo inv = System.Globalization.CultureInfo.InvariantCulture;
 
         float wx = 0.0f;
@@ -232,4 +262,134 @@ public class ServerGame : MonoBehaviour
             }
         }
     }
+
+    //==============================================================
+    private void HandleFire(int fromClientId)
+    {
+        PlayerSim sim;
+        bool has = sims.TryGetValue(fromClientId, out sim);
+        if (has == false)
+        {
+            return;
+        }
+        if (sim == null)
+        {
+            return;
+        }
+
+        // ì¿¨ë‹¤ìš´ í™•ì¸
+        float now = Time.time;
+        if (now < sim.lastFireTime + fireCooldown)
+        {
+            return;
+        }
+        sim.lastFireTime = now;
+
+        // ë ˆì´ ì›ì : position + eyeHeight
+        Vector3 eye = sim.position + new Vector3(0.0f, eyeHeight, 0.0f);
+
+        // yaw/pitch â†’ ì „ë°© ë²¡í„°
+        float yawRad = sim.yaw * Mathf.Deg2Rad;
+        float pitchRad = sim.pitch * Mathf.Deg2Rad;
+
+        // ì¹´ë©”ë¼ ê¸°ì¤€ ì „ë°©: yaw íšŒì „ í›„ pitch ê²½ì‚¬ ì ìš©
+        // Unity ê¸°ì¤€: forward = (sin yaw, 0, cos yaw) ì—ì„œ pitchë¡œ ìƒí•˜ ë¶„í•´
+        Vector3 forwardHorizontal = new Vector3(Mathf.Sin(yawRad), 0.0f, Mathf.Cos(yawRad));
+        forwardHorizontal = forwardHorizontal.normalized;
+
+        // pitch(ìƒí•˜) ë°˜ì˜
+        float cosPitch = Mathf.Cos(pitchRad);
+        float sinPitch = Mathf.Sin(pitchRad);
+        Vector3 dir = new Vector3(forwardHorizontal.x * cosPitch,
+                                  -sinPitch,
+                                  forwardHorizontal.z * cosPitch);
+        dir = dir.normalized;
+
+        Debug.DrawRay(eye, dir * rayMaxDistance, Color.green, 1.0f);
+
+        // ë ˆì´ìºìŠ¤íŠ¸
+        RaycastHit hit;
+        bool hitSomething = Physics.Raycast(eye, dir, out hit, rayMaxDistance, hitMask, QueryTriggerInteraction.Ignore);
+        if (hitSomething == true)
+        {
+            // í”¼ê²© ëŒ€ìƒì˜ Damageable ì°¾ê¸°
+            Damageable dmg = hit.collider.GetComponentInParent<Damageable>();
+            if (dmg != null)
+            {
+                dmg.TakeDamage(damagePerShot);
+
+                // ì£½ì—ˆìœ¼ë©´ ì„œë²„ ë¦¬ìŠ¤í°
+                if (dmg.currentHp == 0)
+                {
+                    Respawn(dmg.transform);
+                }
+            }
+        }
+
+        // ì‚¬ê²© ì´ë²¤íŠ¸ë¥¼ í´ë¼ì— ì•Œë¦¬ê³  ì‹¶ë‹¤ë©´(ë¨¸ì¦, ì‚¬ìš´ë“œ ë™ê¸°) ì—¬ê¸°ì„œ ë¸Œë¡œë“œìºìŠ¤íŠ¸ ê°€ëŠ¥
+        // ì˜ˆ: BroadcastLineAll("SHOT|" + fromClientId + "|" + hitPoint.x + "," + hitPoint.y + "," + hitPoint.z);
+    }
+
+    private void Respawn(Transform avatarRoot)
+    {
+        if (avatarRoot == null)
+        {
+            return;
+        }
+        // ê°„ë‹¨í•œ ì¦‰ì‹œ ë¦¬ìŠ¤í°(ë¬´ì  ì‹œê°„ ë“±ì€ ìƒëµ)
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            // ìŠ¤í° í¬ì¸íŠ¸ ì—†ìœ¼ë©´ ì›ì  ë¦¬ìŠ¤í°
+            avatarRoot.position = Vector3.zero;
+            avatarRoot.rotation = Quaternion.identity;
+        }
+        else
+        {
+            // ë¼ìš´ë“œ ë¡œë¹ˆ ë˜ëŠ” ì„ì˜ ì„ íƒ
+            Transform sp = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
+            if (sp != null)
+            {
+                avatarRoot.position = sp.position;
+                if (ignoreSpawnPointRotation == true)
+                {
+                    avatarRoot.rotation = Quaternion.identity; // í•­ìƒ ì›”ë“œ +Z
+                }
+                else
+                {
+                    avatarRoot.rotation = sp.rotation;
+                }
+            }
+        }
+
+        // Damageable íšŒë³µ
+        Damageable dmg = avatarRoot.GetComponent<Damageable>();
+        if (dmg != null)
+        {
+            dmg.ResetHp();
+        }
+
+        // ì„œë²„ ì‹œë®¬ì˜ ìœ„ì¹˜/ê°ë„ë„ í•¨ê»˜ ë¦¬ì…‹
+        foreach (var kv in sims)
+        {
+            PlayerSim ps = kv.Value;
+            if (ps != null && ps.root == avatarRoot)
+            {
+                ps.position = avatarRoot.position;
+                ps.yaw = 0.0f;
+                ps.pitch = 0.0f;
+            }
+        }
+
+        // STATE ë¸Œë¡œë“œìºìŠ¤íŠ¸ë¡œ í´ë¼ì´ì–¸íŠ¸ ê°±ì‹ 
+        BroadcastState();
+    }
+
+    public void SetRoot(int id, Transform root)
+    {
+        if(sims != null && sims.ContainsKey(id) == true)
+        {
+            sims[id].root = root;
+        }
+    }
+    //==========================================================
 }
